@@ -4,7 +4,7 @@
     "cordova_name": "WifiWizard",
     "description": "This plugin allows Phonegap applications to use Gitwits XPGWifiSDK",
     "license": "Apache 2.0",
-    "repo": "https://github.com/cp612sh/gizwitswrapper/",
+    "repo": "https://github.com/cp612sh/com.heytz.gizwitswrapper/",
     "keywords": [
         "phonegap",
         "network",
