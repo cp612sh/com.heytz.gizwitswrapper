@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        id="com.heytz.gizwitswrapper"
+        version="0.0.3">
+
+    <name>XPGWifiSDKWrapper</name>
+    <description>This plugin allows Phonegap applications to use Gizwits wifisdk.</description>
+    <author>Michael Chai</author>
+    <keywords>phonegap,network,wifi</keywords>
+    <license>Apache 2.0</license>
+    <repo>https://github.com/cp612sh/gizwitswrapper/</repo>
+
+    <js-module src="www/XPGWifiSDKWrapper.js" name="XPGWifiSDKWrapper">
+        <clobbers target="heytz.XPGWifiSDKWrapper"/>
+    </js-module>
+
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="XPGWifiSDKWrapper">
+                <param name="ios-package" value="XPGWifiSDKWrapper"/>
+            </feature>
+        </config-file>
+        <header-file src="src/ios/XPGWifiSDKWrapper.h"/>
+        <source-file src="src/ios/XPGWifiSDKWrapper.m"/>
+        <!--todo:-->
+        <framework src="SystemConfiguration.framework"/>
+    </platform>
+
+</plugin>
