@@ -1,12 +1,12 @@
-//#import "XPGWifiSDKWrapper.h"
+#import "XPGWifiSDKWrapper.h"
 #import <SystemConfiguration/CaptiveNetwork.h>
 
 @implementation XPGWifiSDKWrapper
 
 -(void)getConnectedSSID:(CDVInvokedUrlCommand*)command{
 
-
-    NSString *ssid = nil;
+        CDVPluginResult pluginResult = nil;
+        NSString *ssid = nil;
         NSArray *ifs = (__bridge   id)CNCopySupportedInterfaces();
         NSLog(@"ifs:%@",ifs);
         for (NSString *ifnam in ifs) {

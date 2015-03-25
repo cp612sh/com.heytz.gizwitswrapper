@@ -1,5 +1,5 @@
 {
-    "version": "0.0.3",
+    "version": "0.0.7",
     "name": "com.heytz.gizwitswrapper",
     "cordova_name": "WifiWizard",
     "description": "This plugin allows Phonegap applications to use Gitwits XPGWifiSDK",
