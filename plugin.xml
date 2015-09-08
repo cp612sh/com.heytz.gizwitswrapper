@@ -1,31 +1,35 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        id="com.heytz.gizwitswrapper"
-        version="0.0.7">
-
-    <name>XPGWifiSDKWrapper</name>
-    <description>This plugin allows Phonegap applications to use Gizwits wifisdk.</description>
-    <author>Michael Chai</author>
-    <keywords>phonegap,network,wifi</keywords>
-    <license>Apache 2.0</license>
-    <repo>https://github.com/cp612sh/com.heytz.gizwitswrapper/</repo>
-
-    <js-module src="www/XPGWifiSDKWrapper.js" name="XPGWifiSDKWrapper">
-        <clobbers target="heytz.XPGWifiSDKWrapper"/>
+<?xml version='1.0' encoding='utf-8'?>
+<plugin id="com.heytz.gwsdkwrapper" version="0.3.4" xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+    <name>gwsdkwrapper</name>
+    <js-module name="gwsdkwrapper" src="www/gwsdkwrapper.js">
+        <clobbers target="cordova.plugins.gwsdkwrapper"/>
     </js-module>
-
     <platform name="ios">
-        <config-file target="config.xml" parent="/*">
-            <feature name="XPGWifiSDKWrapper">
-                <param name="ios-package" value="XPGWifiSDKWrapper"/>
+        <config-file parent="/*" target="config.xml">
+            <feature name="gwsdkwrapper">
+                <param name="ios-package" value="gwsdkwrapper"/>
             </feature>
         </config-file>
-        <header-file src="src/ios/XPGWifiSDKWrapper.h"/>
-        <source-file src="src/ios/XPGWifiSDKWrapper.m"/>
-        <!--todo:-->
+        <source-file src="src/ios/gwsdkwrapper.m"/>
+        <source-file framework="true" src="libcrypto.a"/>
+        <source-file framework="true" src="libssl.a"/>
         <framework src="SystemConfiguration.framework"/>
+        <framework src="libc++.dylib"/>
+        <framework custom="true" src="XPGWifiSDK.framework"/>
+        <framework custom="true" src="openssl"/>
     </platform>
-
+    <platform name="android">
+        <config-file parent="/*" target="res/xml/config.xml">
+            <feature name="gwsdkwrapper">
+                <param name="android-package" value="com.heytz.gwsdkwrapper.gwsdkwrapper"/>
+            </feature>
+        </config-file>
+        <config-file parent="/*" target="AndroidManifest.xml"></config-file>
+        <source-file src="src/android/gwsdkwrapper.java" target-dir="src/com/heytz/gwsdkwrapper/" />
+        <source-file src="libs/json-lib-2.4-jdk15.jar" target-dir="libs" />
+        <source-file src="libs/XPGWiFiSDK.jar" target-dir="libs" />
+        <source-file src="libs/lib.jar" target-dir="libs" />
+        <source-file src="libs/simpleconfiglib.jar" target-dir="libs" />
+    </platform>
 </plugin>
