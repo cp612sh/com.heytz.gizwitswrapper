@@ -29,8 +29,8 @@
         <source-file src="src/android/gwsdkwrapper.java" target-dir="src/com/heytz/gwsdkwrapper/" />
         <source-file src="libs/json-lib-2.4-jdk15.jar" target-dir="libs" />
         <source-file src="libs/XPGWiFiSDK.jar" target-dir="libs" />
-        <source-file src="libs/armeabi/libsimpleconfiglib.so" target-dir="libs/armeabi/libsimpleconfiglib.so" />
-        <source-file src="libs/armeabi/libXPGConnect.so" target-dir="libs/armeabi/libXPGConnect.so" />
+        <source-file src="libs/armeabi/libsimpleconfiglib.so" target-dir="libs/armeabi/" />
+        <source-file src="libs/armeabi/libXPGConnect.so" target-dir="libs/armeabi/" />
         <source-file src="libs/simpleconfiglib.jar" target-dir="libs" />
     </platform>
 </plugin>
