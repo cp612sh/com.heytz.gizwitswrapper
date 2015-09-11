@@ -3,7 +3,7 @@
 #import <Cordova/CDV.h>
 #import <XPGWifiSDK/XPGWifiSDK.h>
 
-@interface gwsdkSetDeviceWifi: CDVPlugin<XPGWifiSDKDelegate> {
+@interface gwsdkwrapper: CDVPlugin<XPGWifiSDKDelegate> {
     // Member variables go here.
     NSString * _appId;
 }
@@ -14,7 +14,7 @@
 
 @end
 
-@implementation gwsdkSetDeviceWifi
+@implementation gwsdkwrapper
 
 @synthesize commandHolder;
 
@@ -38,6 +38,7 @@
 {
     [self initSdkWithAppId:command];
     [self setDelegate];
+    self.commandHolder = command;
     
     /**
      * @brief 配置路由的方法
@@ -48,11 +49,30 @@
      * @param timeout: 配置的超时时间 SDK默认执行的最小超时时间为30秒
      * @see 对应的回调接口：[XPGWifiSDK XPGWifiSDK:didSetDeviceWifi:result:]
      */
-    self.commandHolder = command;
+   // self.commandHolder = command;
+   // [[XPGWifiSDK sharedInstance] setDeviceWifi:command.arguments[0]
+   //                                        key:command.arguments[1]
+   //                                       mode:XPGWifiSDKAirLinkMode
+   //                           softAPSSIDPrefix:nil timeout:59];
+    
+    /**
+     配置设备连接路由的方法
+     @param ssid 需要配置到路由的SSID名
+     @param key 需要配置到路由的密码
+     @param mode 配置方式
+     @see XPGConfigureMode
+     @param softAPSSIDPrefix SoftAPMode模式下SoftAP的SSID前缀或全名（XPGWifiSDK以此判断手机当前是否连上了SoftAP，AirLink配置时该参数无意义，传nil即可）
+     @param timeout 配置的超时时间 SDK默认执行的最小超时时间为30秒
+     @param types 配置的wifi模组类型列表，存放NSNumber对象，SDK默认同时发送庆科和汉枫模组配置包；SoftAPMode模式下该参数无意义。types为nil，SDK按照默认处理。如果只想配置庆科模组，types中请加入@XPGWifiGAgentTypeMXCHIP类；如果只想配置汉枫模组，types中请加入@XPGWifiGAgentTypeHF；如果希望多种模组配置包同时传，可以把对应类型都加入到types中。XPGWifiGAgentType枚举类型定义SDK支持的所有模组类型。
+     @see 对应的回调接口：[XPGWifiSDKDelegate XPGWifiSDK:didSetDeviceWifi:result:]
+     */
     [[XPGWifiSDK sharedInstance] setDeviceWifi:command.arguments[0]
                                            key:command.arguments[1]
                                           mode:XPGWifiSDKAirLinkMode
-                              softAPSSIDPrefix:nil timeout:59];
+                              softAPSSIDPrefix:nil
+                                       timeout:59
+                                wifiGAgentType:[NSArray arrayWithObjects:[NSNumber numberWithInt: XPGWifiGAgentTypeHF], nil]
+     ];
 }
 
 /**
@@ -62,11 +82,7 @@
  * @see 触发函数：[XPGWifiSDK setDeviceWifi:key:mode:]
  */
 - (void)XPGWifiSDK:(XPGWifiSDK *)wifiSDK didSetDeviceWifi:(XPGWifiDevice *)device result:(int)result{
-    NSString *uid = self.commandHolder.arguments[4];
-    NSString *token = self.commandHolder.arguments[5];
-    NSLog(@"======uid===%@", uid);
-    NSLog(@"======token=%@", token);
-    if (result == 0  && device.did.length > 0) {
+    if(result == 0  && device.did.length > 0) {
         // successful
         NSLog(@"======did===%@", device.did);
         NSLog(@"======passCode===%@", device.passcode);
@@ -87,6 +103,8 @@
         CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:d];
         //[pluginResult setKeepCallbackAsBool:false];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:self.commandHolder.callbackId];
+    }else if(result == XPGWifiError_CONFIGURE_TIMEOUT){
+        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR] callbackId:self.commandHolder.callbackId];
     }
 }
 
