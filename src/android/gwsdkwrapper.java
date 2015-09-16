@@ -1,8 +1,6 @@
 package com.heytz.gwsdkwrapper;
 
 import android.content.Context;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import com.xtremeprog.xpgconnect.XPGWifiDevice;
 import com.xtremeprog.xpgconnect.XPGWifiSDK;
 import com.xtremeprog.xpgconnect.XPGWifiSDK.XPGWifiConfigureMode;
@@ -14,6 +12,8 @@ import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 
 /**
@@ -94,10 +94,10 @@ public class gwsdkwrapper extends CordovaPlugin {
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        if (action.equals("getCurrentSSID")) {
-            this.getCurrentSSID(callbackContext);
-            return true;
-        }
+//        if (action.equals("getCurrentSSID")) {
+//            this.getCurrentSSID(callbackContext);
+//            return true;
+//        }
         if (action.equals("setDeviceWifi")) {
             this.setDeviceWifi(args.getString(0), args.getString(1), args.getString(2), callbackContext);
             return true;
@@ -105,25 +105,25 @@ public class gwsdkwrapper extends CordovaPlugin {
         return false;
     }
 
-    private void getCurrentSSID(CallbackContext callbackContext) {
-        try {
-            WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-            WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-            String connectedSSID = wifiInfo.getSSID().replace("\"", "");
-            if (connectedSSID != null && connectedSSID.length() > 0) {
-                callbackContext.success(connectedSSID);
-            } else {
-                callbackContext.error("ssid is empty");
-            }
-        } catch (Exception e) {
-            callbackContext.error(e.getMessage());
-        }
-    }
+//    private void getCurrentSSID(CallbackContext callbackContext) {
+//        try {
+//            WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+//            WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+//            String connectedSSID = wifiInfo.getSSID().replace("\"", "");
+//            if (connectedSSID != null && connectedSSID.length() > 0) {
+//                callbackContext.success(connectedSSID);
+//            } else {
+//                callbackContext.error("ssid is empty");
+//            }
+//        } catch (Exception e) {
+//            callbackContext.error(e.getMessage());
+//        }
+//    }
 
     private void setDeviceWifi(String wifiSSID, String wifiKey, String appId, CallbackContext callbackContext) {
-        String appID = appId;//"b40af87e302b4415a374a9c2b1bb4bec";
+        // String appID = appId;//"b40af87e302b4415a374a9c2b1bb4bec";
 
-        XPGWifiSDK.sharedInstance().startWithAppID(context, appID);
+        XPGWifiSDK.sharedInstance().startWithAppID(context, appId);
 
         // set listener
         XPGWifiSDK.sharedInstance().setListener(wifiSDKListener);
@@ -133,8 +133,15 @@ public class gwsdkwrapper extends CordovaPlugin {
 
         if (wifiSSID != null && wifiSSID.length() > 0 && wifiKey != null && wifiKey.length() > 0) {
             airLinkCallbackContext = callbackContext;
-            XPGWifiSDK.sharedInstance().setDeviceWifi(wifiSSID, wifiKey, XPGWifiConfigureMode.XPGWifiConfigureModeAirLink, 59000);
 
+//          setDeviceWifi(String ssid, String key, XPGWifiSDK.XPGWifiConfigureMode mode, String softAPSSIDPrefix, int timeout, List<XPGWifiSDK.XPGWifiGAgentType> types)
+
+
+            ArrayList<XPGWifiSDK.XPGWifiGAgentType> atList = new ArrayList<>();
+            atList.add(XPGWifiSDK.XPGWifiGAgentType.XPGWifiGAgentTypeHF);
+            XPGWifiSDK.sharedInstance()
+                    .setDeviceWifi(wifiSSID, wifiKey, XPGWifiConfigureMode.XPGWifiConfigureModeAirLink, null,
+                            119000, atList);
         } else {
             callbackContext.error("args is empty or null");
         }
