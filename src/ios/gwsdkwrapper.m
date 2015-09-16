@@ -49,11 +49,11 @@
      * @param timeout: 配置的超时时间 SDK默认执行的最小超时时间为30秒
      * @see 对应的回调接口：[XPGWifiSDK XPGWifiSDK:didSetDeviceWifi:result:]
      */
-   // self.commandHolder = command;
-   // [[XPGWifiSDK sharedInstance] setDeviceWifi:command.arguments[0]
-   //                                        key:command.arguments[1]
-   //                                       mode:XPGWifiSDKAirLinkMode
-   //                           softAPSSIDPrefix:nil timeout:59];
+    // self.commandHolder = command;
+    // [[XPGWifiSDK sharedInstance] setDeviceWifi:command.arguments[0]
+    //                                        key:command.arguments[1]
+    //                                       mode:XPGWifiSDKAirLinkMode
+    //                           softAPSSIDPrefix:nil timeout:59];
     
     /**
      配置设备连接路由的方法
@@ -70,7 +70,7 @@
                                            key:command.arguments[1]
                                           mode:XPGWifiSDKAirLinkMode
                               softAPSSIDPrefix:nil
-                                       timeout:59
+                                       timeout:119
                                 wifiGAgentType:[NSArray arrayWithObjects:[NSNumber numberWithInt: XPGWifiGAgentTypeHF], nil]
      ];
 }
@@ -94,10 +94,10 @@
                            device.productKey, @"productKey",
                            device.productName, @"productName",
                            device.remark, @"remark",
-                           device.isConnected, @"isConnected",
-                           device.isDisabled, @"isDisabled",
-                           device.isLAN, @"isLAN",
-                           device.isOnline, @"isOnline",
+                           //device.isConnected, @"isConnected",
+                           //                           device.isDisabled, @"isDisabled",
+                           //                           device.isLAN, @"isLAN",
+                           //                           device.isOnline, @"isOnline",
                            @"",@"error",
                            nil];
         CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:d];
