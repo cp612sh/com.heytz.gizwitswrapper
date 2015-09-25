@@ -9,7 +9,7 @@
 }
 
 -(void)setDeviceWifi:(CDVInvokedUrlCommand *)command;
--(void)dealloc;
+-(void)dealloc:(CDVInvokedUrlCommand *)command;
 
 @property (strong,nonatomic) CDVInvokedUrlCommand * commandHolder;
 
@@ -100,7 +100,7 @@
     }
 }
 
-- (void)dealloc
+- (void)dealloc:(CDVInvokedUrlCommand *)command
 {
     NSLog(@"//====dealloc...====");
     [XPGWifiSDK sharedInstance].delegate = nil;
