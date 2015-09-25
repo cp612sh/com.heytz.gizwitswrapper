@@ -9,6 +9,7 @@
 }
 
 -(void)setDeviceWifi:(CDVInvokedUrlCommand *)command;
+-(void)dealloc;
 
 @property (strong,nonatomic) CDVInvokedUrlCommand * commandHolder;
 
@@ -36,24 +37,12 @@
 
 -(void)setDeviceWifi:(CDVInvokedUrlCommand *)command
 {
+    [XPGWifiSDK sharedInstance].delegate = nil;
+    
     [self initSdkWithAppId:command];
     [self setDelegate];
     self.commandHolder = command;
-    
-    /**
-     * @brief 配置路由的方法
-     * @param ssid：需要配置到路由的SSID名
-     * @param key：需要配置到路由的密码
-     * @param mode：配置方式 SoftAPMode=软AP模式 AirLinkMode=一键配置模式
-     * @param softAPSSIDPrefix：SoftAPMode模式下SoftAP的SSID前缀或全名（XPGWifiSDK以此判断手机当前是否连上了SoftAP，AirLinkMode该参数无意义，传nil即可）
-     * @param timeout: 配置的超时时间 SDK默认执行的最小超时时间为30秒
-     * @see 对应的回调接口：[XPGWifiSDK XPGWifiSDK:didSetDeviceWifi:result:]
-     */
-    // self.commandHolder = command;
-    // [[XPGWifiSDK sharedInstance] setDeviceWifi:command.arguments[0]
-    //                                        key:command.arguments[1]
-    //                                       mode:XPGWifiSDKAirLinkMode
-    //                           softAPSSIDPrefix:nil timeout:59];
+
     
     /**
      配置设备连接路由的方法
@@ -70,7 +59,7 @@
                                            key:command.arguments[1]
                                           mode:XPGWifiSDKAirLinkMode
                               softAPSSIDPrefix:nil
-                                       timeout:119
+                                       timeout:45
                                 wifiGAgentType:[NSArray arrayWithObjects:[NSNumber numberWithInt: XPGWifiGAgentTypeHF], nil]
      ];
 }
@@ -82,29 +71,32 @@
  * @see 触发函数：[XPGWifiSDK setDeviceWifi:key:mode:]
  */
 - (void)XPGWifiSDK:(XPGWifiSDK *)wifiSDK didSetDeviceWifi:(XPGWifiDevice *)device result:(int)result{
-    if(result == 0  && device.did.length > 0) {
+    if(result == 0  && device.did.length == 22) {
         // successful
         NSLog(@"======did===%@", device.did);
         NSLog(@"======passCode===%@", device.passcode);
         NSDictionary *d = [NSDictionary dictionaryWithObjectsAndKeys:
                            device.did, @"did",
-                           device.ipAddress, @"ipAddress",
+                           //device.ipAddress, @"ipAddress",
                            device.macAddress, @"macAddress",
                            device.passcode, @"passcode",
-                           device.productKey, @"productKey",
-                           device.productName, @"productName",
-                           device.remark, @"remark",
+                           //device.productKey, @"productKey",
+                           //device.productName, @"productName",
+                           //device.remark, @"remark",
                            //device.isConnected, @"isConnected",
                            //                           device.isDisabled, @"isDisabled",
                            //                           device.isLAN, @"isLAN",
                            //                           device.isOnline, @"isOnline",
-                           @"",@"error",
+                           //@"",@"error",
                            nil];
         CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:d];
-        //[pluginResult setKeepCallbackAsBool:false];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:self.commandHolder.callbackId];
     }else if(result == XPGWifiError_CONFIGURE_TIMEOUT){
+        NSLog(@"======timeout=====");
         [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR] callbackId:self.commandHolder.callbackId];
+    }else {
+        NSLog(@"======error code:===%d", result);
+        NSLog(@"======did===%@", device.did);
     }
 }
 
