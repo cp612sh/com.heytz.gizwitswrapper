@@ -23,7 +23,7 @@
 }
 
 -(void)initSdkWithAppId:(CDVInvokedUrlCommand *) command{
-    if(!_appId){
+    if([XPGWifiSDK sharedInstance] == nil){
         _appId = command.arguments[2];
         [XPGWifiSDK startWithAppID:_appId];
     }
