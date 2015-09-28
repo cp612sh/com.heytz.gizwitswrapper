@@ -1,14 +1,13 @@
 package com.heytz.gwsdkwrapper;
 
 import android.content.Context;
+import android.util.Log;
 import com.xtremeprog.xpgconnect.XPGWifiDevice;
+import com.xtremeprog.xpgconnect.XPGWifiErrorCode;
 import com.xtremeprog.xpgconnect.XPGWifiSDK;
 import com.xtremeprog.xpgconnect.XPGWifiSDK.XPGWifiConfigureMode;
 import com.xtremeprog.xpgconnect.XPGWifiSDKListener;
-import org.apache.cordova.CallbackContext;
-import org.apache.cordova.CordovaInterface;
-import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,62 +22,47 @@ public class gwsdkwrapper extends CordovaPlugin {
 
     private CallbackContext airLinkCallbackContext;
     private Context context;
+    private String _appId;
+    private XPGWifiSDK _shareInstance;
 
     private XPGWifiSDKListener wifiSDKListener = new XPGWifiSDKListener() {
         @Override
         public void didSetDeviceWifi(int error, XPGWifiDevice device) {
             JSONObject json = new JSONObject();
-            if (error == 0) {
+            if (error == 0 && device.getDid().length() == 22) {
 
                 try {
                     json.put("did", device.getDid());
-                    json.put("ipAddress", device.getIPAddress());
+//                    json.put("ipAddress", device.getIPAddress());
                     json.put("macAddress", device.getMacAddress());
                     json.put("passcode", device.getPasscode());
-                    json.put("productKey", device.getProductKey());
-                    json.put("productName", device.getProductName());
-                    json.put("remark", device.getRemark());
-                    //json.put("ui", device.getUI());
-                    json.put("isConnected", device.isConnected());
-                    json.put("isDisabled", device.isDisabled());
-                    json.put("isLAN", device.isLAN());
-                    json.put("isOnline", device.isOnline());
-                    json.put("error", "");
+//                    json.put("productKey", device.getProductKey());
+//                    json.put("productName", device.getProductName());
+//                    json.put("remark", device.getRemark());
+//                    //json.put("ui", device.getUI());
+//                    json.put("isConnected", device.isConnected());
+//                    json.put("isDisabled", device.isDisabled());
+//                    json.put("isLAN", device.isLAN());
+//                    json.put("isOnline", device.isOnline());
                 } catch (JSONException e) {
                     //e.printStackTrace();
+                    Log.e("====parseJSON====", e.getMessage());
+                    PluginResult pr = new PluginResult(PluginResult.Status.ERROR, e.getMessage());
+                    airLinkCallbackContext.sendPluginResult(pr);
                 }
 
-                if (device.getDid().length() == 22 && device.getProductKey().length() == 32) {
-                    airLinkCallbackContext.success(json);
-                }
-            } else {
-                if (device.getProductKey().length() == 32) {
-                    try {
-                        json.put("did", device.getDid());
-                        json.put("ipAddress", device.getIPAddress());
-                        json.put("macAddress", device.getMacAddress());
-                        json.put("passcode", device.getPasscode());
-                        json.put("productKey", device.getProductKey());
-                        json.put("productName", device.getProductName());
-                        json.put("remark", device.getRemark());
-                        //json.put("ui", device.getUI());
-                        json.put("isConnected", device.isConnected());
-                        json.put("isDisabled", device.isDisabled());
-                        json.put("isLAN", device.isLAN());
-                        json.put("isOnline", device.isOnline());
-                        json.put("error", "");
-                    } catch (JSONException e) {
-                        //e.printStackTrace();
-                    }
-                    airLinkCallbackContext.error(json);
-                } else {
-                    try {
-                        json.put("error", "timeout");
-                    } catch (JSONException e) {
-                        //e.printStackTrace();
-                    }
-                    airLinkCallbackContext.error(json);
-                }
+                PluginResult pr = new PluginResult(PluginResult.Status.OK, json);
+                pr.setKeepCallback(true);
+                //airLinkCallbackContext.sendPluginResult();
+                airLinkCallbackContext.sendPluginResult(pr);
+
+//                if (device.getDid().length() == 22 && device.getProductKey().length() == 32) {
+//                }
+            }
+            // do nothing...
+            else if (error != 0) {
+                PluginResult pr = new PluginResult(PluginResult.Status.ERROR, error);
+                airLinkCallbackContext.sendPluginResult(pr);
             }
         }
     };
@@ -95,22 +79,28 @@ public class gwsdkwrapper extends CordovaPlugin {
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         if (action.equals("setDeviceWifi")) {
-            this.setDeviceWifi(args.getString(0), args.getString(1), args.getString(2), callbackContext);
+            if (_appId == null || (_appId.compareToIgnoreCase(args.getString(2)) != 0)) {
+                _appId = args.getString(2);
+                XPGWifiSDK.sharedInstance().startWithAppID(context, _appId);
+                _shareInstance = XPGWifiSDK.sharedInstance();
+            }
+            this.setDeviceWifi(args.getString(0), args.getString(1), callbackContext);
             return true;
         }
-        if (action.equals("dealloc")){
+        if (action.equals("dealloc")) {
             this.dealloc();
             return true;
         }
         return false;
     }
-    private void setDeviceWifi(String wifiSSID, String wifiKey, String appId, CallbackContext callbackContext) {
 
-        if(null == XPGWifiSDK.sharedInstance())
-            XPGWifiSDK.sharedInstance().startWithAppID(context, appId);
+    private void setDeviceWifi(String wifiSSID, String wifiKey, CallbackContext callbackContext) {
+
+        if (null == _shareInstance)
+            _shareInstance = XPGWifiSDK.sharedInstance();
 
         // set listener
-        XPGWifiSDK.sharedInstance().setListener(wifiSDKListener);
+        _shareInstance.setListener(wifiSDKListener);
 
         // start sdk log;
         //XPGWifiSDK.sharedInstance().setLogLevel(XPGWifiSDK.XPGWifiLogLevel.XPGWifiLogLevelAll, "error.txt", true);
@@ -120,15 +110,14 @@ public class gwsdkwrapper extends CordovaPlugin {
 
             ArrayList<XPGWifiSDK.XPGWifiGAgentType> atList = new ArrayList<>();
             atList.add(XPGWifiSDK.XPGWifiGAgentType.XPGWifiGAgentTypeHF);
-            XPGWifiSDK.sharedInstance()
-                    .setDeviceWifi(wifiSSID, wifiKey, XPGWifiConfigureMode.XPGWifiConfigureModeAirLink, null,
-                            45000, atList);
+            _shareInstance.setDeviceWifi(wifiSSID, wifiKey, XPGWifiConfigureMode.XPGWifiConfigureModeAirLink, null,
+                    45000, atList);
         } else {
             callbackContext.error("args is empty or null");
         }
     }
 
-    private void dealloc(){
-        XPGWifiSDK.sharedInstance().setListener(null);
+    private void dealloc() {
+        _shareInstance = null;
     }
 }
