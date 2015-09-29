@@ -6,6 +6,7 @@
 @interface gwsdkwrapper: CDVPlugin<XPGWifiSDKDelegate> {
     // Member variables go here.
     NSString * _appId;
+    XPGWifiSDK * _shareInstance;
 }
 
 -(void)setDeviceWifi:(CDVInvokedUrlCommand *)command;
@@ -23,26 +24,22 @@
 }
 
 -(void)initSdkWithAppId:(CDVInvokedUrlCommand *) command{
-    if([XPGWifiSDK sharedInstance] == nil){
+    if(_shareInstance == nil){
         _appId = command.arguments[2];
         [XPGWifiSDK startWithAppID:_appId];
+        _shareInstance = [XPGWifiSDK sharedInstance];
+        _shareInstance.delegate = self;
+        
     }
 }
 
--(void) setDelegate{
-    if(!([XPGWifiSDK sharedInstance].delegate)){
-        [XPGWifiSDK sharedInstance].delegate = self;
-    }
-}
 
 -(void)setDeviceWifi:(CDVInvokedUrlCommand *)command
 {
-    [XPGWifiSDK sharedInstance].delegate = nil;
     
     [self initSdkWithAppId:command];
-    [self setDelegate];
     self.commandHolder = command;
-
+    
     
     /**
      配置设备连接路由的方法
@@ -55,12 +52,12 @@
      @param types 配置的wifi模组类型列表，存放NSNumber对象，SDK默认同时发送庆科和汉枫模组配置包；SoftAPMode模式下该参数无意义。types为nil，SDK按照默认处理。如果只想配置庆科模组，types中请加入@XPGWifiGAgentTypeMXCHIP类；如果只想配置汉枫模组，types中请加入@XPGWifiGAgentTypeHF；如果希望多种模组配置包同时传，可以把对应类型都加入到types中。XPGWifiGAgentType枚举类型定义SDK支持的所有模组类型。
      @see 对应的回调接口：[XPGWifiSDKDelegate XPGWifiSDK:didSetDeviceWifi:result:]
      */
-    [[XPGWifiSDK sharedInstance] setDeviceWifi:command.arguments[0]
-                                           key:command.arguments[1]
-                                          mode:XPGWifiSDKAirLinkMode
-                              softAPSSIDPrefix:nil
-                                       timeout:45
-                                wifiGAgentType:[NSArray arrayWithObjects:[NSNumber numberWithInt: XPGWifiGAgentTypeHF], nil]
+    [_shareInstance setDeviceWifi:command.arguments[0]
+                              key:command.arguments[1]
+                             mode:XPGWifiSDKAirLinkMode
+                 softAPSSIDPrefix:nil
+                          timeout:45
+                   wifiGAgentType:[NSArray arrayWithObjects:[NSNumber numberWithInt: XPGWifiGAgentTypeHF], nil]
      ];
 }
 
@@ -77,17 +74,8 @@
         NSLog(@"======passCode===%@", device.passcode);
         NSDictionary *d = [NSDictionary dictionaryWithObjectsAndKeys:
                            device.did, @"did",
-                           //device.ipAddress, @"ipAddress",
                            device.macAddress, @"macAddress",
                            device.passcode, @"passcode",
-                           //device.productKey, @"productKey",
-                           //device.productName, @"productName",
-                           //device.remark, @"remark",
-                           //device.isConnected, @"isConnected",
-                           //                           device.isDisabled, @"isDisabled",
-                           //                           device.isLAN, @"isLAN",
-                           //                           device.isOnline, @"isOnline",
-                           //@"",@"error",
                            nil];
         CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:d];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:self.commandHolder.callbackId];
@@ -103,7 +91,7 @@
 - (void)dealloc:(CDVInvokedUrlCommand *)command
 {
     NSLog(@"//====dealloc...====");
-    [XPGWifiSDK sharedInstance].delegate = nil;
+    _shareInstance = nil;
 }
 
 
