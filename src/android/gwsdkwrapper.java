@@ -12,8 +12,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-
 
 /**
  * This class wrapping Gizwits WifiSDK called from JavaScript.
@@ -28,22 +26,14 @@ public class gwsdkwrapper extends CordovaPlugin {
     private XPGWifiSDKListener wifiSDKListener = new XPGWifiSDKListener() {
         @Override
         public void didSetDeviceWifi(int error, XPGWifiDevice device) {
+            dealloc();
             JSONObject json = new JSONObject();
             if (error == 0 && device.getDid().length() == 22) {
 
                 try {
                     json.put("did", device.getDid());
-//                    json.put("ipAddress", device.getIPAddress());
                     json.put("macAddress", device.getMacAddress());
                     json.put("passcode", device.getPasscode());
-//                    json.put("productKey", device.getProductKey());
-//                    json.put("productName", device.getProductName());
-//                    json.put("remark", device.getRemark());
-//                    //json.put("ui", device.getUI());
-//                    json.put("isConnected", device.isConnected());
-//                    json.put("isDisabled", device.isDisabled());
-//                    json.put("isLAN", device.isLAN());
-//                    json.put("isOnline", device.isOnline());
                 } catch (JSONException e) {
                     //e.printStackTrace();
                     Log.e("====parseJSON====", e.getMessage());
@@ -53,16 +43,15 @@ public class gwsdkwrapper extends CordovaPlugin {
 
                 PluginResult pr = new PluginResult(PluginResult.Status.OK, json);
                 pr.setKeepCallback(true);
-                //airLinkCallbackContext.sendPluginResult();
                 airLinkCallbackContext.sendPluginResult(pr);
-
-//                if (device.getDid().length() == 22 && device.getProductKey().length() == 32) {
-//                }
             }
             // do nothing...
-            else if (error != 0) {
+            else if (error == XPGWifiErrorCode.XPGWifiError_CONNECT_TIMEOUT) {
+                //dealloc();
                 PluginResult pr = new PluginResult(PluginResult.Status.ERROR, error);
                 airLinkCallbackContext.sendPluginResult(pr);
+            } else {
+                //dealloc();
             }
         }
     };
@@ -95,25 +84,22 @@ public class gwsdkwrapper extends CordovaPlugin {
     }
 
     private void setDeviceWifi(String wifiSSID, String wifiKey, CallbackContext callbackContext) {
-
-        if (null == _shareInstance)
+        if (null == _shareInstance) {
             _shareInstance = XPGWifiSDK.sharedInstance();
+            // set listener
+            _shareInstance.setListener(wifiSDKListener);
 
-        // set listener
-        _shareInstance.setListener(wifiSDKListener);
+            if (wifiSSID != null && wifiSSID.length() > 0 && wifiKey != null && wifiKey.length() > 0) {
+                airLinkCallbackContext = callbackContext;
 
-        // start sdk log;
-        //XPGWifiSDK.sharedInstance().setLogLevel(XPGWifiSDK.XPGWifiLogLevel.XPGWifiLogLevelAll, "error.txt", true);
-
-        if (wifiSSID != null && wifiSSID.length() > 0 && wifiKey != null && wifiKey.length() > 0) {
-            airLinkCallbackContext = callbackContext;
-
-            ArrayList<XPGWifiSDK.XPGWifiGAgentType> atList = new ArrayList<>();
-            atList.add(XPGWifiSDK.XPGWifiGAgentType.XPGWifiGAgentTypeHF);
-            _shareInstance.setDeviceWifi(wifiSSID, wifiKey, XPGWifiConfigureMode.XPGWifiConfigureModeAirLink, null,
-                    45000, atList);
-        } else {
-            callbackContext.error("args is empty or null");
+                // 这里如果使用ArrayList<E>会导致JAVA编译版本不兼容
+//            ArrayList<XPGWifiSDK.XPGWifiGAgentType> atList = new ArrayList<>();
+//            atList.add(XPGWifiSDK.XPGWifiGAgentType.XPGWifiGAgentTypeHF);
+                _shareInstance.setDeviceWifi(wifiSSID, wifiKey, XPGWifiConfigureMode.XPGWifiConfigureModeAirLink, null,
+                        45000, null);
+            } else {
+                callbackContext.error("args is empty or null");
+            }
         }
     }
 
