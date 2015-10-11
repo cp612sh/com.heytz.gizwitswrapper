@@ -42,7 +42,7 @@ public class gwsdkwrapper extends CordovaPlugin {
                 }
 
                 PluginResult pr = new PluginResult(PluginResult.Status.OK, json);
-                pr.setKeepCallback(true);
+               // pr.setKeepCallback(true);
                 airLinkCallbackContext.sendPluginResult(pr);
             }
             // do nothing...
@@ -71,7 +71,7 @@ public class gwsdkwrapper extends CordovaPlugin {
             if (_appId == null || (_appId.compareToIgnoreCase(args.getString(2)) != 0)) {
                 _appId = args.getString(2);
                 XPGWifiSDK.sharedInstance().startWithAppID(context, _appId);
-                _shareInstance = XPGWifiSDK.sharedInstance();
+                //_shareInstance = XPGWifiSDK.sharedInstance();
             }
             this.setDeviceWifi(args.getString(0), args.getString(1), callbackContext);
             return true;
