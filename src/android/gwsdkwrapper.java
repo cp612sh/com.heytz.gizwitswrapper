@@ -31,6 +31,7 @@ public class gwsdkwrapper extends CordovaPlugin {
             if (error == 0 && device.getDid().length() == 22) {
 
                 try {
+                    json.put("productKey", device.getProductKey());
                     json.put("did", device.getDid());
                     json.put("macAddress", device.getMacAddress());
                     json.put("passcode", device.getPasscode());
