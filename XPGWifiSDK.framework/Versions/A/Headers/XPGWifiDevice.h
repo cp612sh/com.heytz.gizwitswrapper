@@ -9,9 +9,9 @@
 #import <Foundation/Foundation.h>
 
 //#define __INTERNAL_TESTING_API__
-#ifndef __INTERNAL_SUPPORT_SWITCH_SERVICE_AND_LOG_CACHE__
-#define __INTERNAL_SUPPORT_SWITCH_SERVICE_AND_LOG_CACHE__
-#endif
+//#ifndef __INTERNAL_SUPPORT_SWITCH_SERVICE_AND_LOG_CACHE__
+//#define __INTERNAL_SUPPORT_SWITCH_SERVICE_AND_LOG_CACHE__
+//#endif
 
 @class XPGWifiDevice;
 
@@ -201,15 +201,9 @@ typedef NS_ENUM (NSInteger, XPGWifiDeviceType)
 @property (nonatomic, strong, readonly) NSString *productName;
 
 /**
- 设备界面字典
- */
-@property (nonatomic, strong, readonly) NSDictionary *ui;
-
-/**
  设备别名
  */
 @property (nonatomic, strong, readonly) NSString *remark;
-
 
 /**
  设备是否已登录
@@ -230,7 +224,6 @@ typedef NS_ENUM (NSInteger, XPGWifiDeviceType)
  设备是否已注销
  */
 @property (nonatomic, assign, readonly) BOOL isDisabled;
-
 
 /**
  设备分类
