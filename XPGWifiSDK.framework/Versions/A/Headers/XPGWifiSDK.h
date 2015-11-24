@@ -14,6 +14,7 @@
 #import <XPGWifiSDK/XPGWifiCentralControlDevice.h>
 #import <XPGWifiSDK/XPGWifiSubDevice.h>
 #import <XPGWifiSDK/XPGWifiGroup.h>
+#import <XPGWifiSDK/XPGUserInfo.h>
 
 /**
  XPGWifiThirdAccountType枚举，描述SDK支持的第三方账号类型
@@ -102,10 +103,20 @@ typedef NS_ENUM (NSInteger, XPGWifiErrorCode)
     XPGWifiError_PACKET_CHECKSUM = -8,
 
     /**
+     登录验证失败
+     */
+    XPGWifiError_LOGIN_VERIFY_FAILED = -9,
+    
+    /**
      控制设备时，发现该设备没有登录过
      */
-    XPGWifiError_LOGIN_FAIL = -10,
+    XPGWifiError_NOT_LOGINED = -10,
     
+    /**
+     设备未连接
+     */
+    XPGWifiError_NOT_CONNECTED = -11,
+
     /**
      执行 MQTT 相关操作时出错
      */
@@ -180,6 +191,11 @@ typedef NS_ENUM (NSInteger, XPGWifiErrorCode)
      获取 DNS 失败
      */
     XPGWifiError_DNS_FAILED = -27,
+    
+    /**
+     UDP 端口绑定失败
+     */
+    XPGWifiError_UDP_PORT_BIND_FAILED = -30,
 
     /**
      配置 on-boarding 时，手机连接的 SSID 与配置设备的 SSID 不一致
@@ -215,6 +231,16 @@ typedef NS_ENUM (NSInteger, XPGWifiErrorCode)
      连接被拒绝
      */
     XPGWifiError_CONNECTION_REFUSED = -45,
+
+    /**
+     当前事件正在处理
+     */
+    XPGWifiError_IS_RUNNING = -46,
+    
+    /**
+     不支持的 API
+     */
+    XPGWifiError_UNSUPPORTED_API = -47,
 };
 
 /**
@@ -269,8 +295,20 @@ typedef NS_ENUM (NSInteger, XPGWifiGAgentType)
      */
     XPGWifiGAgentTypeHF = 1,
 
-    //RTK模组（RealTek）
+    /**
+     RTK模组（RealTek）
+     */
     XPGWifiGAgentTypeRTK = 2,
+
+    /**
+     WM模组（联盛德）
+     */
+    XPGWifiGAgentTypeWM = 3,
+
+    /**
+     ESP模组（乐鑫）
+     */
+    XPGWifiGAgentTypeESP = 4,
 };
 
 typedef enum _tagXPGCloudService
@@ -280,6 +318,13 @@ typedef enum _tagXPGCloudService
     XPG_DEVELOPMENT = 2,
     XPG_TENCENT = 3,
 }XPGCloudService;
+
+typedef enum _tagXPGUserAccountType
+{
+    XPGUserAccountTypeNormal = 0,
+    XPGUserAccountTypePhone = 1,
+    XPGUserAccountTypeEmail = 2,
+}XPGUserAccountType;
 
 @class XPGWifiSDK;
 
@@ -343,14 +388,34 @@ typedef enum _tagXPGCloudService
  */
 - (void)XPGWifiSDK:(XPGWifiSDK *)wifiSDK didUpdateProduct:(NSString *)product result:(int)result;
 
+- (void)XPGWifiSDK:(XPGWifiSDK *)wifiSDK didRequestSendVerifyCode:(NSNumber *)error errorMessage:(NSString *)errorMessage DEPRECATED_ATTRIBUTE;
+
 /**
- 获取手机验证码的回调接口，返回向指定手机发送验证码的请求结果
- @param wifiSDK 为回调的 XPGWifiSDK 单例
- @param error 0为成功，其他失败
- @param errorMessage 错误信息（无错误则为nil）
- @see 触发函数：[XPGWifiSDK requestSendVerifyCode:]
+ 获取图片验证码的回调接口
+ @param wifiSDK 为回调的 GizifiSDK 单例
+ @param result 0为成功，其他失败
+ @param token 图片验证码 token
+ @param captchaId 图片验证码 id
+ @param captchaURL 图片验证码网址
+ @see 触发函数：[XPGWifiSDK getCaptchaCode:]
  */
-- (void)XPGWifiSDK:(XPGWifiSDK *)wifiSDK didRequestSendVerifyCode:(NSNumber *)error errorMessage:(NSString *)errorMessage;
+- (void)wifiSDK:(XPGWifiSDK *)wifiSDK didGetCaptchaCode:(NSError*)result token:(NSString*)token captchaId:(NSString *)captchaId captchaURL:(NSString*)captchaURL;
+
+/**
+ 请求发送手机验证码的回调接口，返回请求结果
+ @param wifiSDK 为回调的 GizifiSDK 单例
+ @param result 0为成功，其他失败
+ @see 触发函数：[XPGWifiSDK requestSendPhoneSMSCode:captchaId:captchaCode:phone:]
+ */
+- (void)wifiSDK:(XPGWifiSDK *)wifiSDK didRequestSendPhoneSMSCode:(NSError*)result;
+
+/**
+ 验证手机验证码结果
+ @param wifiSDK 为回调的 GizifiSDK 单例
+ @param result 0为成功，其他失败
+ @see 触发函数：[XPGWifiSDK verifyPhoneSMSCode:verifyCode:phone:]
+ */
+- (void)wifiSDK:(XPGWifiSDK *)wifiSDK didVerifyPhoneSMSCode:(NSError*)result;
 
 /**
  用户注册的回调接口，返回注册用户的结果
@@ -408,7 +473,7 @@ typedef enum _tagXPGCloudService
  @param errorMessage 错误信息（无错误则为nil）
  @see 触发函数：[XPGWifiSDK changeUserEmail:email:]
  */
-- (void)XPGWifiSDK:(XPGWifiSDK *)wifiSDK didChangeUserEmail:(NSNumber *)error errorMessage:(NSString *)errorMessage;
+- (void)XPGWifiSDK:(XPGWifiSDK *)wifiSDK didChangeUserEmail:(NSNumber *)error errorMessage:(NSString *)errorMessage DEPRECATED_ATTRIBUTE;
 
 /**
  修改用户手机号的回调接口，修改用户手机号结果
@@ -417,7 +482,24 @@ typedef enum _tagXPGCloudService
  @param errorMessage 错误信息（无错误则为nil）
  @see 触发函数：[XPGWifiSDK changeUserPhone:phone:code:]
  */
-- (void)XPGWifiSDK:(XPGWifiSDK *)wifiSDK didChangeUserPhone:(NSNumber *)error errorMessage:(NSString *)errorMessage;
+- (void)XPGWifiSDK:(XPGWifiSDK *)wifiSDK didChangeUserPhone:(NSNumber *)error errorMessage:(NSString *)errorMessage DEPRECATED_ATTRIBUTE;
+
+/**
+ 修改用户的回调接口，返回修改用户的结果
+ @param wifiSDK 为回调的 GizWifiSDK 单例
+ @param result 0为成功，其他失败
+ @see 触发函数：[GizWifiSDK changeUserInfo:username:verifyCode:accountType:]
+ */
+- (void)wifiSDK:(XPGWifiSDK *)wifiSDK didChangeUserInfo:(NSError *)result;
+
+/**
+ 获取用户信息的回调接口，返回用户的信息结果
+ @param wifiSDK 为回调的 GizWifiSDK 单例
+ @param result 0为成功，其他失败
+ @param userInfo 用户信息
+ @see 触发函数：[XPGWifiSDK getUserInfo:]
+ */
+- (void)wifiSDK:(XPGWifiSDK *)wifiSDK didGetUserInfo:(NSError *)result userInfo:(XPGUserInfo*) userInfo;
 
 /**
  设备绑定的回调接口，返回设备绑定的结果
@@ -597,8 +679,35 @@ typedef enum _tagXPGCloudService
  请求向指定手机发送验证码
  @param phone 手机号
  @see 对应的回调接口：[XPGWifiSDKDelegate XPGWifiSDK:didRequestSendVerifyCode:errorMessage:]
+ @deprecated 此接口已废弃，请使用替代接口：[XPGWifiSDK requestSendPhoneSMSCode:captchaId:captchaCode:phone:]
  */
-- (void)requestSendVerifyCode:(NSString *)phone;
+- (void)requestSendVerifyCode:(NSString *)phone DEPRECATED_ATTRIBUTE;
+
+/**
+ 通过 App Secret 获取图片验证码
+ @param appSecret 应用的 secret 信息，从 site.gizwits.com 中可以看到
+ @see 对应的回调接口：[XPGWifiSDKDelegate wifiSDK:didGetCaptchaCode:token:captchaId:captchaURL:]
+ */
+- (void)getCaptchaCode:(NSString *)appSecret;
+
+/**
+ 请求发送手机短信验证码
+ @param token 验证码 token，通过 getCaptchaCode 获取
+ @param captchaId 验证码 id，通过 getCaptchaCode 获取
+ @param captchaCode 验证码，来自图片的验证内容
+ @param phone 手机号
+ @see 对应的回调接口：[XPGWifiSDKDelegate wifiSDK:didRequestSendPhoneSMSCode:]
+ */
+- (void)requestSendPhoneSMSCode:(NSString *)token captchaId:(NSString*)captchaId captchaCode:(NSString*)captchaCode phone:(NSString*)phone;
+
+/**
+ 验证手机短信验证码
+ @param token 验证码 token，通过 getCaptchaCode 获取
+ @param phoneCode 手机短信中的验证码内容
+ @param phone 手机号
+ @see 对应的回调接口：[XPGWifiSDKDelegate wifiSDK:didVerifyPhoneSMSCode:]
+ */
+- (void)verifyPhoneSMSCode:(NSString *)token verifyCode:(NSString*)code phone:(NSString*)phone;
 
 /**
  注册普通用户（通过用户名、密码注册）
@@ -705,7 +814,7 @@ typedef enum _tagXPGCloudService
  @param email 指定需要修改成的邮箱地址
  @see 对应的回调接口：[XPGWifiSDKDelegate XPGWifiSDK:didChangeUserEmail:errorMessage:]
  */
-- (void)changeUserEmail:(NSString *)token email:(NSString *)email;
+- (void)changeUserEmail:(NSString *)token email:(NSString *)email DEPRECATED_ATTRIBUTE;
 
 /**
  修改用户手机号
@@ -714,7 +823,33 @@ typedef enum _tagXPGCloudService
  @param code 指定需要修改成的手机号收到验证码（通过requestSendVerifyCode方法触发指定手机号接收短信内的验证码）
  @see 对应的回调接口：[XPGWifiSDKDelegate XPGWifiSDK:didChangeUserPhone:errorMessage:]
  */
-- (void)changeUserPhone:(NSString *)token phone:(NSString *)phone code:(NSString *)code;
+- (void)changeUserPhone:(NSString *)token phone:(NSString *)phone code:(NSString *)code DEPRECATED_ATTRIBUTE;
+
+/**
+ 修改用户信息
+ @param token 登录成功后得到的token
+ @param username 指定需要修改成的手机号、邮箱
+ @param code 手机用户时需要使用验证码（通过requestSendVerifyCode方法触发指定手机号接收短信内的验证码
+ @param accountType 用户类型（可以是普通用户、手机、邮箱）
+ @param additionalInfo 附加信息
+ @note  该接口支持同时设置用户名和详细信息。
+ 
+ 如果设置用户信息，返回的结果以设置用户名为主
+ 如果设置用户名成功，补充信息失败，视为成功，但 error.localizedDescription 提示补充信息失败
+ 如果设置用户名失败，补充信息成功，视为失败，error.localizedDescription 提示设置用户名的错误
+ 如果都失败，error.localizedDescription 提示设置用户名的错误，
+ 如果都成功，error.localizedDescription 为空串
+
+ @see 对应的回调接口：[XPGWifiSDKDelegate wifiSDK:didChangeUserInfo:]
+ */
+- (void)changeUserInfo:(NSString *)token username:(NSString *)username verifyCode:(NSString *)code accountType:(XPGUserAccountType)accountType additionalInfo:(XPGUserInfo *) additionalInfo;
+
+/**
+ 获取用户信息
+ @param token 登录成功后得到的token
+ @see 对应的回调接口：[XPGWifiSDKDelegate wifiSDK:didGetUserInfo:]
+ */
+- (void)getUserInfo:(NSString *)token;
 
 /**
  绑定设备到服务器
