@@ -12,13 +12,13 @@
             </feature>
         </config-file>
         <source-file src="src/ios/gwsdkwrapper.m"/>
-        <!--<source-file framework="true" src="libcrypto.a"/>-->
-        <!--<source-file framework="true" src="libssl.a"/>-->
+        <source-file framework="true" src="libcrypto.a"/>
+        <source-file framework="true" src="libssl.a"/>
         <source-file framework="true" src="libEsptouch_v0.3.3.4_4.a"/>
         <framework src="SystemConfiguration.framework"/>
         <framework src="libc++.dylib"/>
         <framework custom="true" src="XPGWifiSDK.framework"/>
-        <!--<framework custom="true" src="openssl"/>-->
+        <framework custom="true" src="openssl"/>
     </platform>
     <platform name="android">
         <config-file parent="/*" target="res/xml/config.xml">
