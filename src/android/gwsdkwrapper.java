@@ -56,10 +56,7 @@ public class gwsdkwrapper extends CordovaPlugin {
         }
         @Override
         public void didSetDeviceWifi(int error, XPGWifiDevice device) {
-            dealloc();
             if (error == 0 && device.getMacAddress().length() > 0) {
-                Log.e("====didSetDeviceWifi callback===getMacAddress:=", device.getMacAddress());
-                Log.e("====didSetDeviceWifi callback===getIPAddress:=", device.getIPAddress());
                 _currentDeviceMac=device.getMacAddress();
             }
             // do nothing...
