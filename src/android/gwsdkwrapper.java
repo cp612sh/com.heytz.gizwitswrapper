@@ -32,7 +32,7 @@ public class gwsdkwrapper extends CordovaPlugin {
             if (result == XPGWifiErrorCode.XPGWifiError_NONE && devicesList.size() > 0) {
 
                 for (int i = 0; i < devicesList.size(); i++) {
-                    if((_currentDeviceMac!=null)&&(devicesList.get(i).getMacAddress().indexOf(_currentDeviceMac)>-1)) {
+                    if((_currentDeviceMac!=null)&&(devicesList.get(i).getMacAddress().indexOf(_currentDeviceMac)>-1)&&(devicesList.get(i).getDid().length()>0)) {
                         _currentDeviceMac=null;
                         JSONObject json = new JSONObject();
                         try {
