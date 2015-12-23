@@ -12,8 +12,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.List;
-
 
 /**
  * This class wrapping Gizwits WifiSDK called from JavaScript.
@@ -24,40 +22,28 @@ public class gwsdkwrapper extends CordovaPlugin {
     private Context context;
     private String _appId;
     private XPGWifiSDK _shareInstance;
-    private String _currentDeviceMac;
 
     private XPGWifiSDKListener wifiSDKListener = new XPGWifiSDKListener() {
         @Override
-        public void didDiscovered(int result, List<XPGWifiDevice> devicesList) {
-            if (result == XPGWifiErrorCode.XPGWifiError_NONE && devicesList.size() > 0) {
+        public void didSetDeviceWifi(int error, XPGWifiDevice device) {
+            //dealloc();
+            JSONObject json = new JSONObject();
+            if (error == 0 && device.getDid().length() == 22) {
 
-                for (int i = 0; i < devicesList.size(); i++) {
-                    if((_currentDeviceMac!=null)&&(devicesList.get(i).getMacAddress().indexOf(_currentDeviceMac)>-1)&&(devicesList.get(i).getDid().length()>0)) {
-                        _currentDeviceMac=null;
-                        JSONObject json = new JSONObject();
-                        try {
-                            json.put("productKey", devicesList.get(i).getProductKey());
-                            json.put("did", devicesList.get(i).getDid());
-                            json.put("macAddress", devicesList.get(i).getMacAddress());
-                            json.put("passcode", devicesList.get(i).getPasscode());
-                        }catch (JSONException e) {
-                            //e.printStackTrace();
-                            Log.e("====parseJSON====", e.getMessage());
-                            PluginResult pr = new PluginResult(PluginResult.Status.ERROR, e.getMessage());
-                            airLinkCallbackContext.sendPluginResult(pr);
-                        }
-                        PluginResult pr = new PluginResult(PluginResult.Status.OK, json);
-                        // pr.setKeepCallback(true);
-                        airLinkCallbackContext.sendPluginResult(pr);
-                    }
+                try {
+                    json.put("did", device.getDid());
+                    json.put("macAddress", device.getMacAddress());
+                    json.put("passcode", device.getPasscode());
+                } catch (JSONException e) {
+                    //e.printStackTrace();
+                    Log.e("====parseJSON====", e.getMessage());
+                    PluginResult pr = new PluginResult(PluginResult.Status.ERROR, e.getMessage());
+                    airLinkCallbackContext.sendPluginResult(pr);
                 }
 
-            }
-        }
-        @Override
-        public void didSetDeviceWifi(int error, XPGWifiDevice device) {
-            if (error == 0 && device.getMacAddress().length() > 0) {
-                _currentDeviceMac=device.getMacAddress();
+                PluginResult pr = new PluginResult(PluginResult.Status.OK, json);
+                // pr.setKeepCallback(true);
+                airLinkCallbackContext.sendPluginResult(pr);
             }
             // do nothing...
             else if (error == XPGWifiErrorCode.XPGWifiError_CONNECT_TIMEOUT) {
@@ -109,10 +95,8 @@ public class gwsdkwrapper extends CordovaPlugin {
                 // 这里如果使用ArrayList<E>会导致JAVA编译版本不兼容
 //            ArrayList<XPGWifiSDK.XPGWifiGAgentType> atList = new ArrayList<>();
 //            atList.add(XPGWifiSDK.XPGWifiGAgentType.XPGWifiGAgentTypeHF);
-//                _shareInstance.setDeviceWifi(wifiSSID, wifiKey, XPGWifiConfigureMode.XPGWifiConfigureModeAirLink, null,
-//                        18000);
-                //15.11.24 切换成新接口
-                _shareInstance.setDeviceWifi(wifiSSID,wifiKey,XPGWifiConfigureMode.XPGWifiConfigureModeAirLink,null,18000,null);
+                _shareInstance.setDeviceWifi(wifiSSID, wifiKey, XPGWifiConfigureMode.XPGWifiConfigureModeAirLink, null,
+                        45000, null);
             } else {
                 callbackContext.error("args is empty or null");
             }
@@ -120,7 +104,9 @@ public class gwsdkwrapper extends CordovaPlugin {
     }
 
     private void dealloc() {
-        _shareInstance = null;
-        _currentDeviceMac=null;
+        if (_shareInstance != null) {
+            _shareInstance.setListener(null);
+            _shareInstance = null;
+        }
     }
 }
