@@ -178,6 +178,7 @@ NSString    *_currentPairDeviceMacAddress;
     NSLog(@"//====dealloc...====");
     _shareInstance = nil;
     _currentPairDeviceMacAddress=nil;
+     _shareInstance.delegate = nil;
 }
 
 
@@ -185,5 +186,6 @@ NSString    *_currentPairDeviceMacAddress;
     NSLog(@"//====disposed...====");
     _shareInstance=nil;
     _currentPairDeviceMacAddress=nil;
+     _shareInstance.delegate = nil;
 }
 @end
