@@ -134,7 +134,10 @@ public class gwsdkwrapper extends CordovaPlugin {
     }
 
     private void dealloc() {
-        _shareInstance = null;
-        _currentDeviceMac = null;
+        if (_shareInstance != null) {
+            _shareInstance.setListener(null);
+            _shareInstance = null;
+            _currentDeviceMac = null;
+        }
     }
 }
